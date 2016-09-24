@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Demo</title>
+    <link href="../sentient.prism.css" rel="stylesheet" />
+    <style>
+      body { font-family: Helvetica, sans-serif; margin: 4em; }
+      pre { width: 50em; }
+      h2 { margin-top: 4em; }
+    </style>
+  </head>
+  <body>
+    <h1>sentient.prism</h1>
+
+    <p>
+    This page contains some example
+    <a href="http://sentient-lang.org">Sentient</a> programs highlighted using
+    <a href="https://github.com/sentient-lang/prism-sentient">this extension.</a>
+    </p>
+
+    <h2>Subset sum</h2>
+    <pre><code class="language-sentient">array20&lt;int&gt; numbers;
+array20&lt;bool&gt; members;
+
+sum = 0;
+
+numbers.each(function^ (number, index) {
+  sum += members[index] ? number : 0;
+});
+
+expose numbers, members, sum;</code></pre>
+
+    <h2>Knights tour</h2>
+    <pre><code class="language-sentient">function main () {
+  array25&lt;array2&lt;int4&gt;&gt; knightsTour;
+
+  knightsTour.eachCons(2, function (move) {
+    from, to = move.first, move.last;
+    invariant validMove?(from, to);
+  });
+
+  invariant knightsTour.all?(*inBounds?);
+  invariant knightsTour.uniq?;
+
+  isClosed = validMove?(knightsTour.last, knightsTour.first);
+
+  expose knightsTour, isClosed;
+};
+
+function validMove? (from, to) {
+  xDelta = (from.x - to.x).abs;
+  yDelta = (from.y - to.y).abs;
+
+  return xDelta == 1 && yDelta == 2
+      || xDelta == 2 && yDelta == 1;
+};
+
+function inBounds? (coordinate) {
+  return coordinate.x.between?(1, 5)
+      && coordinate.y.between?(1, 5);
+};
+
+function x (coordinate) {
+  return coordinate.first;
+};
+
+function y (coordinate) {
+  return coordinate.last;
+};
+
+main();</code></pre>
+
+    <h2>Nonogram</h2>
+    <pre><code class="language-sentient">function main () {
+  array25&lt;array25&lt;bool&gt;&gt; grid;
+  array25&lt;array13&lt;int6&gt;&gt; rowNumbers, columnNumbers;
+
+  rowNumbers = removeZeros(rowNumbers);
+  columnNumbers = removeZeros(columnNumbers);
+
+  grid.validate!(rowNumbers);
+  grid.transpose.validate!(columnNumbers);
+
+  expose grid, rowNumbers, columnNumbers;
+};
+
+function removeZeros (numbersArray) {
+  return numbersArray.map(function (numbers) {
+    return numbers.reject(*zero?);
+  });
+};
+
+function validate! (grid, rowNumbers) {
+  rowNumbers.each(function^ (numbers, rowIndex) {
+    cells = grid[rowIndex];
+
+    previous = false;
+    count = 0;
+    index = -1;
+
+    cells.each(function^ (cell) {
+      edge = cell != previous;
+      endOfRun = edge && !cell;
+
+      tickOffNumberIf(endOfRun);
+
+      count = edge ? 1 : count + 1;
+      previous = cell;
+    });
+
+    tickOffNumberIf(previous);
+    invariant index == numbers.length - 1;
+  });
+};
+
+function^ tickOffNumberIf (condition) {
+  index += condition ? 1 : 0;
+  number, inBounds = numbers.get(index);
+  invariant condition ? number == count : true;
+};
+
+main();</code></pre>
+
+
+    <h2>Syntax rules</h2>
+    <p>This is used for testing purposes.</p>
+
+    <pre><code class="language-sentient"># Keywords:
+expose
+invariant
+return
+
+# Numbers:
+0, 1, 2, 12, 123456
+-1, -1234
+
+# Booleans:
+true
+false
+
+# Declarations:
+int
+int8
+bool
+array3&lt;bool&gt;
+array123&lt;int3&gt;
+
+# Brackets:
+[], { }, [123, 456, []]
+
+# Functions and Pointers:
+function foo () {};
+function^ bar (*baz) {};
+qux(  *foo, *bar?);
+
+# Semicolons:
+;, ;;
+
+# Edge cases to check for:
+exposex
+xexpose
+;expose;
+--1, ----1, -0
+-[123].first
+xtrue
+falsex
+[true, false]
+array
+xarray3
+bool3
+boolx
+xint
+functionx
+xfunction
+aaaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccc dddddddddddddd eeeeeeeeeeeeeeeee ffffffffffffff
+# expose 123 true int</code></pre>
+
+    <script src="prism.js"></script>
+    <script src="../sentient.prism.js"></script>
+  </body>
+</html>
